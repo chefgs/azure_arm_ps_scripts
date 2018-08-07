@@ -1,0 +1,233 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.2",
+  "parameters": {
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "Admin username for VM"
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Admin password for VMs"
+      }
+    },
+    "offsetIndexValue": {
+      "type": "int",
+      "defaultValue": 1234,
+      "metadata": {
+        "description": "Offset Index assigned VMs. Some random numbers between 2000 to 5000."
+      }
+    },
+    "numberOfInstances": {
+      "type": "int",
+      "defaultValue": 2,
+      "minValue": 1,
+      "maxValue": 1000,
+      "metadata": {
+        "description": "Number of VMs to deploy, limit 1000"
+      }
+    },
+    "numberOfDisk": {
+      "type": "int",
+      "defaultValue": 2,
+      "minValue": 1,
+      "maxValue": 1000,
+      "metadata": {
+        "description": "Number of Disk to deploy, limit 1000"
+      }
+    },
+    "vmTagValues": {
+      "type": "object",
+      "defaultValue": {
+        "Environment": "vm"
+      }
+    },
+    "OS": {
+      "type": "string",
+      "defaultValue": "Ubuntu",
+      "allowedValues": [
+        "Ubuntu",
+        "Windows"
+      ],
+      "metadata": {
+        "description": "OS Platform for the VM"
+      }
+    }
+  },
+  "variables": {
+    "virtualNetworkName": "[concat('myVNET-', parameters('offsetIndexValue'))]",
+    "addressPrefix": "10.1.0.0/14",
+    "subnet1Name": "Subnet-1",
+    "subnet1Prefix": "10.1.0.0/22",
+    "subnet1Ref": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('virtualNetworkName'),variables('subnet1Name'))]",
+	"offsetIndex": "[parameters('offsetIndexValue')]",
+    "Ubuntu": {
+      "publisher": "Canonical",
+      "offer": "UbuntuServer",
+      "sku": "16.04.0-LTS",
+      "version": "latest"
+    },
+    "Windows": {
+      "publisher": "MicrosoftWindowsServer",
+      "offer": "WindowsServer",
+      "sku": "2016-Datacenter",
+      "version": "latest"
+    },
+    "imageReference": "[variables(parameters('OS'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('virtualNetworkName')]",
+      "apiVersion": "2016-03-30",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('addressPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('subnet1Name')]",
+            "properties": {
+              "addressPrefix": "[variables('subnet1Prefix')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat('nic', copyindex(int(parameters('offsetIndexValue'))))]",
+      "apiVersion": "2016-03-30",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "nicLoop",
+        "count": "[parameters('numberOfInstances')]"
+      },
+      "dependsOn": [
+        "[variables('virtualNetworkName')]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[variables('subnet1Ref')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Compute/disks",
+      "name": "[concat('vmdatadisk', copyindex(int(parameters('offsetIndexValue'))))]",
+      "apiVersion": "2017-03-30",
+      "location": "[resourceGroup().location]",
+	  "tags": {
+          "tag1": "disktag1",
+          "tag2": "disktag2",
+          "tag3": "disktag3",
+          "tag4": "disktag4",
+          "tag5": "disktag5",
+          "tag6": "disktag6",
+          "tag7": "disktag7",
+          "tag8": "disktag8",
+          "tag9": "disktag9",
+          "tag10": "disktag10",
+          "tag11": "disktag11",
+          "tag12": "disktag12",
+          "tag13": "disktag13",
+          "tag14": "disktag14",
+          "tag15": "disktag15",
+	  },
+      "sku": {
+          "name": "Standard_LRS"
+      },
+	  "copy": {
+           "name": "vmDiskResLoop",
+           "count": "[parameters('numberOfDisk')]"
+      },
+      "properties": {
+        "creationData": {
+            "createOption": "Empty"
+        },
+        "diskSizeGB": 10
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[concat('myvm', copyindex(int(parameters('offsetIndexValue'))))]",
+      "apiVersion": "2017-03-30",
+      "location": "[resourceGroup().location]",
+      "tags": 
+	  {
+	    "tag14": "VM", 
+		"tag15": "[concat('vm', copyindex(int(parameters('offsetIndexValue'))))]",
+        "tag1": "vmtag1",
+        "tag2": "vmtag2",
+        "tag3": "vmtag3",
+        "tag4": "vmtag4",
+        "tag5": "vmtag5",
+        "tag6": "vmtag6",
+        "tag7": "vmtag7",
+        "tag8": "vmtag8",
+        "tag9": "vmtag9",
+        "tag10": "vmtag10",
+        "tag11": "vmtag11",
+        "tag12": "vmtag12",
+        "tag13": "vmtag13"
+	  },
+      "copy": {
+        "name": "virtualMachineLoop",
+        "count": "[parameters('numberOfInstances')]"
+      },
+      "dependsOn": [
+        "nicLoop",
+		"vmDiskResLoop"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "Standard_A0"
+        },
+        "osProfile": {
+          "computerName": "[concat('vm', copyindex(int(parameters('offsetIndexValue'))))]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+		  "copy": [{
+          "name": "dataDisks",
+		  "count": 1,
+		  "input": {
+                    "lun": "[copyIndex('dataDisks')]",
+                    "name": "[concat('vmdatadisk', copyindex(int(parameters('offsetIndexValue'))))]",
+                    "createOption": "attach",
+                    "managedDisk": {
+                        "id": "[resourceId('Microsoft.Compute/disks/', concat('vmdatadisk', copyindex(int(parameters('offsetIndexValue')))))]"
+                    }
+                }
+          }],
+          "imageReference": "[variables('imageReference')]",
+          "osDisk": {
+            "createOption": "FromImage"
+          }
+		},
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat('nic', copyindex(int(parameters('offsetIndexValue')))))]"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

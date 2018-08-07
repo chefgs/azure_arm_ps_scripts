@@ -1,0 +1,24 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.3",
+  "parameters": {
+    "adminUsername": {
+      "value": "username"
+    },
+    "adminPassword": {
+      "value": "pwd_string"
+    },
+    "offsetIndexValue": {
+	  "value": 2802
+	},
+    "numberOfInstances": {
+      "value": 200
+    },
+    "numberOfDisk": {
+      "value": 200
+    },
+    "OS": {
+      "value": "Windows"
+    }
+  }
+}

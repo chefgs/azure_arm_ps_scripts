@@ -1,0 +1,216 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.2",
+  "parameters": {
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "Admin username for VM"
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Admin password for VMs"
+      }
+    },
+    "offsetIndexValue": {
+      "type": "int",
+      "defaultValue": 1234,
+      "metadata": {
+        "description": "Offset Index assigned VMs. Some random numbers between 2000 to 5000."
+      }
+    },
+    "numberOfInstances": {
+      "type": "int",
+      "defaultValue": 2,
+      "minValue": 1,
+      "maxValue": 1000,
+      "metadata": {
+        "description": "Number of VMs to deploy, limit 1000"
+      }
+    },
+    "numberOfSAccount": {
+      "type": "int",
+      "defaultValue": 2,
+      "minValue": 1,
+      "maxValue": 1000,
+      "metadata": {
+        "description": "Number of Storage Accounts to deploy, limit 1000"
+      }
+    },
+    "vmTagValues": {
+      "type": "object",
+      "defaultValue": {
+        "Environment": "VM"
+      }
+    },
+    "OS": {
+      "type": "string",
+      "defaultValue": "Ubuntu",
+      "allowedValues": [
+        "Ubuntu",
+        "Windows"
+      ],
+      "metadata": {
+        "description": "OS Platform for the VM"
+      }
+    }
+  },
+  "variables": {
+    "virtualNetworkName": "[concat('myVNET-', parameters('offsetIndexValue'))]",
+    "addressPrefix": "10.1.0.0/14",
+    "subnet1Name": "Subnet-1",
+    "subnet1Prefix": "10.1.0.0/22",
+    "subnet1Ref": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('virtualNetworkName'),variables('subnet1Name'))]",
+	"offsetIndex": "[parameters('offsetIndexValue')]",
+    "Ubuntu": {
+      "publisher": "Canonical",
+      "offer": "UbuntuServer",
+      "sku": "16.04.0-LTS",
+      "version": "latest"
+    },
+    "Windows": {
+      "publisher": "MicrosoftWindowsServer",
+      "offer": "WindowsServer",
+      "sku": "2016-Datacenter",
+      "version": "latest"
+    },
+    "imageReference": "[variables(parameters('OS'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[concat('saccnt', copyindex(int(parameters('offsetIndexValue'))))]",
+      "apiVersion": "2016-01-01",
+      "location": "[resourceGroup().location]",
+      "tags": {
+            "Tag1": "SAtag1",
+            "Tag2": "satag2",
+            "Tag3": "SAtag3",
+            "Tag4": "SAtag4",
+            "Tag5": "SAtag5",
+            "Tag6": "SATag6",
+            "Tag7": "SAtag7",
+            "Tag8": "SAtag8",
+            "Tag9": "SAtag9",
+            "Tag10": "satag10",
+            "Tag11": "SAtag11",
+            "Tag12": "satag12",
+            "Tag13": "SAtag13",
+            "Tag14": "satag14",
+            "Tag15": "satag15"
+      },
+      "copy": {
+        "name": "saAccountLoop",
+        "count": "[parameters('numberOfSAccount')]"
+      },
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "Storage",
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('virtualNetworkName')]",
+      "apiVersion": "2016-03-30",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('addressPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('subnet1Name')]",
+            "properties": {
+              "addressPrefix": "[variables('subnet1Prefix')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat('nic', copyindex(int(parameters('offsetIndexValue'))))]",
+      "apiVersion": "2016-03-30",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "nicLoop",
+        "count": "[parameters('numberOfInstances')]"
+      },
+      "dependsOn": [
+        "[variables('virtualNetworkName')]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[variables('subnet1Ref')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[concat('myvm', copyindex(int(parameters('offsetIndexValue'))))]",
+      "apiVersion": "2016-04-30-preview",
+      "location": "[resourceGroup().location]",
+      "tags": 
+	  {
+	    "TagObject": "VM", 
+		"TagName": "[concat('VM', copyindex(int(parameters('offsetIndexValue'))))]",
+            "Tag1": "VMtag1",
+            "Tag2": "VMtag2",
+            "Tag3": "VMtag3",
+            "Tag4": "VMtag4",
+            "Tag5": "VMtag5",
+            "Tag6": "VMtag6",
+            "Tag7": "VMtag7",
+            "Tag8": "VMtag8",
+            "Tag9": "VMtag9",
+            "Tag10": "VMtag10",
+            "Tag11": "VMtag11",
+            "Tag12": "VMtag12",
+            "Tag13": "VMtag13"
+	  },
+      "copy": {
+        "name": "virtualMachineLoop",
+        "count": "[parameters('numberOfInstances')]"
+      },
+      "dependsOn": [
+        "nicLoop"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "Standard_A0"
+        },
+        "osProfile": {
+          "computerName": "[concat('vm', copyindex(int(parameters('offsetIndexValue'))))]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": "[variables('imageReference')]",  
+          "osDisk": {
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat('nic', copyindex(int(parameters('offsetIndexValue')))))]"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
