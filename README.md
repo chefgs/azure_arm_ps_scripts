@@ -1,5 +1,5 @@
 # azure_arm_ps_scripts
-## Repo and ARM Template details
+## `arm_templates` directory details
 - This repo contains the Azure ARM template samples.
 - The templates can be used to spin up below resources
   - Instance of type `Standard_A0` (cheaper version)
@@ -22,3 +22,7 @@
   - `numberOfDisk` param can be used to set the total number of disc count
   - `adminUsername` and `adminPassword` param values will be used to login the instances 
   
+## Invoke templates from the path `ps_scripts` directory
+- Run `Login-AzureRmAccount` to login into your Azure account
+- Create resource group using `./create_rg.ps1 rg_name`
+- Invoke resource creation defined in ARM template using `./create_azure_instances.ps1 rg_name template_json template_parameter_json`
