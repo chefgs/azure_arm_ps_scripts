@@ -146,7 +146,7 @@
           "tag12": "disktag12",
           "tag13": "disktag13",
           "tag14": "disktag14",
-          "tag15": "disktag15",
+          "tag15": "disktag15"
 	  },
       "sku": {
           "name": "Standard_LRS"
