@@ -1,4 +1,5 @@
 # azure_arm_ps_scripts
+## Repo and ARM Template details
 - This repo contains the Azure ARM template samples.
 - The templates can be used to spin up below resources
   - Instance of type `Standard_A0` (cheaper version)
@@ -12,4 +13,12 @@
   - nicloop - for creating NICs
   - virtualMachineloop - for creating VMs
   - vmDiskResLoop - for storage Discs
+
+## How the templates can be used
+- Templates can be used to create 'n' number instances and discs given in corresponding parameter json file
+- Below values needs to be added in parameter json file of coresponding template file,
+  - The `offsetIndexValue` param can be used as first reference index value to start the iteration loop
+  - `numberOfInstances` param can be used to set the total number of instance count
+  - `numberOfDisk` param can be used to set the total number of disc count
+  - `adminUsername` and `adminPassword` param values will be used to login the instances 
   
